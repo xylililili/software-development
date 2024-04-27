@@ -5,6 +5,11 @@ package edu.duke.ece651.xl404.javaFx;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+
+import edu.duke.ece651.xl404.javaFx.controller.CalculatorController;
+import edu.duke.ece651.xl404.javaFx.controller.NumButtonController;
+import edu.duke.ece651.xl404.javaFx.model.RPNStack;
 
 //public class App {
 //  public String getGreeting() {
@@ -19,17 +24,29 @@ import java.net.URL;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 public class App extends Application {
   @Override
   public void start(Stage stage) throws IOException{
+    RPNStack model = new RPNStack();
    URL xmlResource = getClass().getResource("/ui/calc-monolithic.xml");
    URL cssResource = getClass().getResource("/ui/calcbuttons.css");
-   GridPane gp = FXMLLoader.load(xmlResource);
+   FXMLLoader loader = new FXMLLoader(xmlResource);
+   HashMap<Class<?>,Object> controllers = new HashMap<>();
+   controllers.put(NumButtonController.class, new NumButtonController(model));
+   controllers.put(CalculatorController.class, new CalculatorController());
+   loader.setControllerFactory((c) -> {
+       return controllers.get(c);
+     });
+   GridPane gp = loader.load();
    Scene scene = new Scene(gp, 640, 480);
    scene.getStylesheets().add(cssResource.toString());
    stage.setScene(scene);
+   @SuppressWarnings("unchecked")
+   ListView<Double> operands = (ListView<Double>) scene.lookup("#rpnstack");
+   operands.setItems(model.getList());
    stage.show();
   }
 }
